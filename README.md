@@ -18,7 +18,7 @@ Download video TikTok tanpa watermark dalam kualitas HD, SD, atau audio MP3. Gra
 
 ## Demo
 
-Akses langsung di: **[https://username.github.io/nama-repo](https://username.github.io/nama-repo)**
+Akses langsung di: **[https://ferdymf.github.io/Tiktok-Downloader/](https://ferdymf.github.io/Tiktok-Downloader/)**
 
 > Ganti URL di atas dengan URL GitHub Pages Anda.
 
