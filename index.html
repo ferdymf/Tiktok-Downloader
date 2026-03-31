@@ -63,6 +63,9 @@
     <title>TikSave - TikTok Downloader</title>
 
     <style>
+      /* ============================================
+         BASE & RESET
+      ============================================ */
       *, *::before, *::after {
         box-sizing: border-box;
       }
@@ -72,6 +75,9 @@
         text-size-adjust: 100%;
         scroll-behavior: smooth;
         overscroll-behavior: none;
+        /* Render teks lebih tajam di mobile */
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
       }
 
       body {
@@ -79,6 +85,7 @@
         padding: 0;
         background-color: #0a0a0f;
         color: #f0f0f8;
+        /* Fallback font jika Google Fonts gagal dimuat */
         font-family:
           'Inter',
           -apple-system,
@@ -110,6 +117,7 @@
         background: transparent;
       }
 
+      /* Touch: eliminasi delay 300ms, tetap izinkan scroll */
       a,
       button,
       [role="button"],
@@ -121,6 +129,7 @@
         -webkit-tap-highlight-color: transparent;
       }
 
+      /* Minimum touch target 44px (Apple HIG) */
       button,
       [role="button"],
       a {
@@ -128,6 +137,7 @@
         min-width: 44px;
       }
 
+      /* Cegah zoom saat input difokus di iOS */
       @media (max-width: 768px) {
         input,
         select,
@@ -136,6 +146,95 @@
         }
       }
 
+      /* ============================================
+         HAPUS EFEK BLUR DEKORATIF
+         Blur berat (blur-[120px], blur-[100px]) pada
+         elemen background sangat membebani GPU di HP
+         mid-low end. Override semua blur decorative.
+      ============================================ */
+      .blur-\[120px\],
+      .blur-\[100px\],
+      .blur-\[80px\],
+      .blur-\[60px\] {
+        filter: none !important;
+        -webkit-filter: none !important;
+      }
+
+      /* Sembunyikan elemen background dekoratif sepenuhnya
+         di HP agar tidak buang resource render */
+      @media (max-width: 768px) {
+        .fixed.inset-0.opacity-30,
+        .absolute.rounded-full.blur-\[120px\],
+        .absolute.rounded-full.blur-\[100px\] {
+          display: none !important;
+        }
+      }
+
+      /* ============================================
+         MOBILE OPTIMIZATIONS
+      ============================================ */
+
+      /* Teks lebih mudah dibaca di layar kecil */
+      @media (max-width: 640px) {
+        html {
+          font-size: 15px;
+        }
+
+        /* Pastikan konten tidak terlalu mepet ke tepi layar */
+        .max-w-md {
+          padding-left: 16px !important;
+          padding-right: 16px !important;
+        }
+
+        /* Input area lebih nyaman disentuh */
+        input[type="text"],
+        input[type="url"] {
+          padding-top: 14px !important;
+          padding-bottom: 14px !important;
+          line-height: 1.5 !important;
+        }
+
+        /* Tombol lebih tebal agar mudah ditekan */
+        button[type="submit"],
+        button.w-full {
+          padding-top: 14px !important;
+          padding-bottom: 14px !important;
+        }
+      }
+
+      /* Perbaiki rendering gambar di semua ukuran */
+      img {
+        image-rendering: -webkit-optimize-contrast;
+        image-rendering: crisp-edges;
+      }
+
+      /* Smooth transition untuk semua elemen interaktif */
+      button, a, [role="button"] {
+        transition: opacity 0.15s ease, transform 0.15s ease;
+        -webkit-transition: opacity 0.15s ease, transform 0.15s ease;
+      }
+
+      /* Feedback visual saat tombol ditekan di mobile */
+      @media (hover: none) {
+        button:active,
+        [role="button"]:active,
+        a:active {
+          opacity: 0.75;
+          transform: scale(0.97);
+        }
+      }
+
+      /* Safe area di PWA standalone */
+      @media (display-mode: standalone) {
+        body {
+          padding-top: 0;
+          padding-bottom: 0;
+        }
+      }
+
+      /* ============================================
+         SPLASH SCREEN
+      ============================================ */
       #splash {
         position: fixed;
         inset: 0;
@@ -173,19 +272,77 @@
         50% { opacity: 0.7; transform: scale(0.95); }
       }
 
-      @media (display-mode: standalone) {
-        body {
-          padding-top: 0;
-          padding-bottom: 0;
-        }
+      /* ============================================
+         INDIKATOR OFFLINE
+      ============================================ */
+      #offline-banner {
+        position: fixed;
+        top: env(safe-area-inset-top, 0px);
+        left: 0;
+        right: 0;
+        z-index: 10000;
+        background: #1a1a1a;
+        border-bottom: 1px solid #2a2a2a;
+        padding: 10px 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        font-size: 13px;
+        color: #f0f0f8;
+        font-weight: 500;
+        transform: translateY(-100%);
+        transition: transform 0.3s ease;
+        /* Tambahkan backdrop agar teks tetap terbaca */
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+      }
+
+      #offline-banner.visible {
+        transform: translateY(0);
+      }
+
+      #offline-banner .offline-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #ef4444;
+        flex-shrink: 0;
+        animation: blink-dot 1.5s ease-in-out infinite;
+      }
+
+      @keyframes blink-dot {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.3; }
+      }
+
+      /* ============================================
+         VALIDASI URL: Error message custom
+      ============================================ */
+      #url-error-msg {
+        display: none;
+        margin-top: 8px;
+        padding: 8px 12px;
+        background: rgba(239, 68, 68, 0.1);
+        border: 1px solid rgba(239, 68, 68, 0.3);
+        border-radius: 10px;
+        font-size: 13px;
+        color: #f87171;
+        text-align: center;
+        animation: fade-in 0.2s ease;
+      }
+
+      #url-error-msg.visible {
+        display: block;
+      }
+
+      @keyframes fade-in {
+        from { opacity: 0; transform: translateY(-4px); }
+        to { opacity: 1; transform: translateY(0); }
       }
     </style>
 
-    <!--
-      GitHub Pages SPA Routing: Restore redirect dari 404.html
-      Script ini harus dijalankan SEBELUM React mount agar
-      history.replaceState sudah berjalan saat React Router init.
-    -->
+    <!-- GitHub Pages SPA Routing Fix -->
     <script>
       (function () {
         try {
@@ -198,9 +355,7 @@
               window.history.replaceState(null, '', targetPath);
             }
           }
-        } catch (e) {
-          // Abaikan jika sessionStorage tidak tersedia
-        }
+        } catch (e) {}
       })();
     </script>
 
@@ -208,6 +363,14 @@
     <script type="module" crossorigin src="./assets/index-CadpYMbW.js"></script>
   </head>
   <body>
+
+    <!-- Indikator Offline -->
+    <div id="offline-banner" role="status" aria-live="polite">
+      <span class="offline-dot"></span>
+      <span>Tidak ada koneksi internet. Download tidak tersedia.</span>
+    </div>
+
+    <!-- Splash screen -->
     <div id="splash" aria-hidden="true">
       <img id="splash-logo" src="./icons/icon-192x192.png" alt="" />
       <span id="splash-text">TikSave</span>
@@ -216,7 +379,9 @@
     <div id="root"></div>
 
     <script>
-      // Sembunyikan splash saat React mount
+      /* ============================================
+         SPLASH SCREEN
+      ============================================ */
       (function () {
         var splash = document.getElementById('splash');
 
@@ -245,7 +410,152 @@
     </script>
 
     <script>
-      // Deteksi iOS dan PWA standalone
+      /* ============================================
+         INDIKATOR OFFLINE
+         Muncul otomatis saat koneksi terputus,
+         hilang saat koneksi kembali.
+      ============================================ */
+      (function () {
+        var banner = document.getElementById('offline-banner');
+
+        function showOffline() {
+          if (banner) banner.classList.add('visible');
+        }
+
+        function hideOffline() {
+          if (banner) banner.classList.remove('visible');
+        }
+
+        // Cek status awal
+        if (!navigator.onLine) showOffline();
+
+        window.addEventListener('offline', showOffline);
+        window.addEventListener('online', hideOffline);
+      })();
+    </script>
+
+    <script>
+      /* ============================================
+         VALIDASI URL TIKTOK DI FRONTEND
+         
+         Strategi: intercept klik tombol download di
+         fase capture (sebelum React memprosesnya).
+         Jika URL tidak valid, tampilkan error dan
+         batalkan event agar request ke API tidak dikirim.
+         
+         Pattern URL TikTok yang valid:
+         - tiktok.com/@user/video/123
+         - vm.tiktok.com/xxxxx
+         - vt.tiktok.com/xxxxx
+      ============================================ */
+      (function () {
+        var TIKTOK_PATTERN = /(?:https?:\/\/)?(?:www\.|vm\.|vt\.)?tiktok\.com\/.+/i;
+
+        var errorEl = null;
+
+        function getErrorEl() {
+          if (errorEl) return errorEl;
+          errorEl = document.getElementById('url-error-msg');
+          return errorEl;
+        }
+
+        function showError(msg) {
+          var el = getErrorEl();
+          if (!el) return;
+          el.textContent = msg;
+          el.classList.add('visible');
+          // Sembunyikan otomatis setelah 4 detik
+          setTimeout(function () {
+            el.classList.remove('visible');
+          }, 4000);
+        }
+
+        function hideError() {
+          var el = getErrorEl();
+          if (el) el.classList.remove('visible');
+        }
+
+        function findTikTokInput() {
+          // Cari input yang kemungkinan berisi URL TikTok
+          var inputs = document.querySelectorAll('input[type="text"], input:not([type])');
+          for (var i = 0; i < inputs.length; i++) {
+            var ph = (inputs[i].placeholder || '').toLowerCase();
+            if (ph.includes('tiktok') || ph.includes('url') || ph.includes('link') || ph.includes('paste')) {
+              return inputs[i];
+            }
+          }
+          // Fallback: input pertama di dalam #root
+          return document.querySelector('#root input');
+        }
+
+        function injectErrorEl(input) {
+          if (document.getElementById('url-error-msg')) return;
+          var el = document.createElement('div');
+          el.id = 'url-error-msg';
+          // Sisipkan setelah parent input
+          var parent = input.closest('form, [class*="glass"], [class*="rounded"]') || input.parentElement;
+          if (parent && parent.parentElement) {
+            parent.parentElement.insertBefore(el, parent.nextSibling);
+          }
+          errorEl = el;
+        }
+
+        function validateAndIntercept() {
+          var input = findTikTokInput();
+          if (!input) return;
+
+          injectErrorEl(input);
+
+          // Hapus error saat user mulai mengetik
+          input.addEventListener('input', hideError);
+
+          // Intercept klik tombol submit di fase capture
+          document.addEventListener('click', function (e) {
+            var btn = e.target.closest('button');
+            if (!btn) return;
+
+            // Hanya intercept tombol yang ada di area form input
+            var inputParent = input.closest('[class]');
+            if (!inputParent || !inputParent.contains(btn)) return;
+
+            var value = (input.value || '').trim();
+
+            // Biarkan jika input kosong: React sudah handle pesan ini
+            if (!value) return;
+
+            // Validasi format URL TikTok
+            if (!TIKTOK_PATTERN.test(value)) {
+              e.stopPropagation();
+              e.preventDefault();
+              showError('URL tidak valid. Pastikan URL berasal dari TikTok.');
+              input.focus();
+              return;
+            }
+
+            hideError();
+          }, true); // true = capture phase, jalan sebelum React
+        }
+
+        // Tunggu React mount lalu inject validasi
+        var root = document.getElementById('root');
+        var initObserver = new MutationObserver(function (mutations, obs) {
+          var input = findTikTokInput();
+          if (input) {
+            validateAndIntercept();
+            obs.disconnect();
+          }
+        });
+
+        if (root) {
+          initObserver.observe(root, { childList: true, subtree: true });
+        }
+      })();
+    </script>
+
+    <script>
+      /* ============================================
+         DETEKSI iOS & PWA STANDALONE
+      ============================================ */
       (function () {
         var ua = navigator.userAgent;
         if (/iphone|ipad|ipod/i.test(ua)) {
@@ -256,7 +566,9 @@
         }
       })();
 
-      // Service Worker Registration
+      /* ============================================
+         SERVICE WORKER REGISTRATION
+      ============================================ */
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', function () {
           navigator.serviceWorker.register('./sw.js', { scope: './' })
@@ -266,5 +578,6 @@
         });
       }
     </script>
+
   </body>
 </html>
