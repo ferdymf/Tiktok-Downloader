@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#0a0a0f" />
+    <title>TikSave</title>
+    <style>
+      body {
+        margin: 0;
+        background-color: #0a0a0f;
+      }
+    </style>
+    <script>
+      /*
+        GitHub Pages SPA Routing Fix
+        
+        GitHub Pages mengembalikan 404 saat user refresh halaman
+        di URL selain root (misal: /download, /history).
+        
+        Solusi: 404.html redirect ke index.html sambil menyimpan
+        path asli di sessionStorage, lalu index.html membacanya
+        dan React Router melanjutkan navigasi ke path yang benar.
+        
+        Teknik ini tidak memerlukan server-side configuration.
+      */
+      (function () {
+        var location = window.location;
+        var path = location.pathname;
+        var search = location.search;
+        var hash = location.hash;
+
+        // Simpan path lengkap ke sessionStorage
+        var redirectData = {
+          path: path,
+          search: search,
+          hash: hash
+        };
+
+        sessionStorage.setItem('spa_redirect', JSON.stringify(redirectData));
+
+        // Redirect ke root dengan query string sebagai penanda
+        // agar index.html tahu ini dari 404 redirect
+        var rootUrl = location.protocol + '//' + location.hostname +
+          (location.port ? ':' + location.port : '') +
+          location.pathname.split('/').slice(0, 2).join('/') + '/?p=1';
+
+        location.replace(rootUrl);
+      })();
+    </script>
+  </head>
+  <body></body>
+</html>
