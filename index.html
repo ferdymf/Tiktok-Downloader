@@ -2,7 +2,9 @@
 <html lang="id">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+
+    <!-- PERBAIKAN #1: Hapus user-scalable=no dan maximum-scale=1.0 (melanggar WCAG 2.1) -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 
     <!-- Theme & App Colors -->
     <meta name="theme-color" content="#0a0a0f" />
@@ -15,11 +17,25 @@
     <meta name="author" content="TikSave" />
     <meta name="robots" content="index, follow" />
 
-    <!-- Open Graph -->
+    <!-- PERBAIKAN #2: Canonical URL untuk cegah duplikat konten -->
+    <link rel="canonical" href="https://ferdymf.github.io/Tiktok-Downloader/" />
+
+    <!-- PERBAIKAN #3: Open Graph lengkap dengan URL absolut -->
     <meta property="og:title" content="TikSave - Download TikTok Tanpa Watermark" />
     <meta property="og:description" content="Download video TikTok dalam kualitas HD, SD, atau audio MP3. Gratis dan tanpa watermark." />
     <meta property="og:type" content="website" />
-    <meta property="og:image" content="./icons/icon-512x512.png" />
+    <meta property="og:url" content="https://ferdymf.github.io/Tiktok-Downloader/" />
+    <meta property="og:image" content="https://ferdymf.github.io/Tiktok-Downloader/icons/icon-512x512.png" />
+    <meta property="og:image:width" content="512" />
+    <meta property="og:image:height" content="512" />
+    <meta property="og:site_name" content="TikSave" />
+    <meta property="og:locale" content="id_ID" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="TikSave - Download TikTok Tanpa Watermark" />
+    <meta name="twitter:description" content="Download video TikTok dalam kualitas HD, SD, atau audio MP3. Gratis dan tanpa watermark." />
+    <meta name="twitter:image" content="https://ferdymf.github.io/Tiktok-Downloader/icons/icon-512x512.png" />
 
     <!-- PWA: iOS -->
     <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -56,7 +72,11 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 
-    <!-- Preload Critical Assets -->
+    <!--
+      CATATAN PERBAIKAN #4: Preload di bawah ini menggunakan nama file build saat ini.
+      Setiap kali Anda build ulang dengan Vite, hash berubah dan baris ini harus diupdate.
+      Solusi permanen: gunakan vite-plugin-html untuk auto-inject preload saat build.
+    -->
     <link rel="preload" href="./assets/index-CEPzjMK7.css" as="style" />
     <link rel="preload" href="./assets/index-CadpYMbW.js" as="script" crossorigin />
 
@@ -75,7 +95,6 @@
         text-size-adjust: 100%;
         scroll-behavior: smooth;
         overscroll-behavior: none;
-        /* Render teks lebih tajam di mobile */
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
       }
@@ -85,7 +104,6 @@
         padding: 0;
         background-color: #0a0a0f;
         color: #f0f0f8;
-        /* Fallback font jika Google Fonts gagal dimuat */
         font-family:
           'Inter',
           -apple-system,
@@ -117,7 +135,6 @@
         background: transparent;
       }
 
-      /* Touch: eliminasi delay 300ms, tetap izinkan scroll */
       a,
       button,
       [role="button"],
@@ -129,7 +146,6 @@
         -webkit-tap-highlight-color: transparent;
       }
 
-      /* Minimum touch target 44px (Apple HIG) */
       button,
       [role="button"],
       a {
@@ -137,7 +153,6 @@
         min-width: 44px;
       }
 
-      /* Cegah zoom saat input difokus di iOS */
       @media (max-width: 768px) {
         input,
         select,
@@ -147,10 +162,7 @@
       }
 
       /* ============================================
-         HAPUS EFEK BLUR DEKORATIF
-         Blur berat (blur-[120px], blur-[100px]) pada
-         elemen background sangat membebani GPU di HP
-         mid-low end. Override semua blur decorative.
+         HAPUS EFEK BLUR DEKORATIF (hemat GPU)
       ============================================ */
       .blur-\[120px\],
       .blur-\[100px\],
@@ -160,8 +172,6 @@
         -webkit-filter: none !important;
       }
 
-      /* Sembunyikan elemen background dekoratif sepenuhnya
-         di HP agar tidak buang resource render */
       @media (max-width: 768px) {
         .fixed.inset-0.opacity-30,
         .absolute.rounded-full.blur-\[120px\],
@@ -173,20 +183,16 @@
       /* ============================================
          MOBILE OPTIMIZATIONS
       ============================================ */
-
-      /* Teks lebih mudah dibaca di layar kecil */
       @media (max-width: 640px) {
         html {
           font-size: 15px;
         }
 
-        /* Pastikan konten tidak terlalu mepet ke tepi layar */
         .max-w-md {
           padding-left: 16px !important;
           padding-right: 16px !important;
         }
 
-        /* Input area lebih nyaman disentuh */
         input[type="text"],
         input[type="url"] {
           padding-top: 14px !important;
@@ -194,7 +200,6 @@
           line-height: 1.5 !important;
         }
 
-        /* Tombol lebih tebal agar mudah ditekan */
         button[type="submit"],
         button.w-full {
           padding-top: 14px !important;
@@ -202,19 +207,16 @@
         }
       }
 
-      /* Perbaiki rendering gambar di semua ukuran */
       img {
         image-rendering: -webkit-optimize-contrast;
         image-rendering: crisp-edges;
       }
 
-      /* Smooth transition untuk semua elemen interaktif */
       button, a, [role="button"] {
         transition: opacity 0.15s ease, transform 0.15s ease;
         -webkit-transition: opacity 0.15s ease, transform 0.15s ease;
       }
 
-      /* Feedback visual saat tombol ditekan di mobile */
       @media (hover: none) {
         button:active,
         [role="button"]:active,
@@ -224,7 +226,6 @@
         }
       }
 
-      /* Safe area di PWA standalone */
       @media (display-mode: standalone) {
         body {
           padding-top: 0;
@@ -293,7 +294,6 @@
         font-weight: 500;
         transform: translateY(-100%);
         transition: transform 0.3s ease;
-        /* Tambahkan backdrop agar teks tetap terbaca */
         backdrop-filter: blur(8px);
         -webkit-backdrop-filter: blur(8px);
       }
@@ -317,7 +317,7 @@
       }
 
       /* ============================================
-         VALIDASI URL: Error message custom
+         VALIDASI URL
       ============================================ */
       #url-error-msg {
         display: none;
@@ -339,6 +339,119 @@
       @keyframes fade-in {
         from { opacity: 0; transform: translateY(-4px); }
         to { opacity: 1; transform: translateY(0); }
+      }
+
+      /* ============================================
+         FITUR BARU: PULL-TO-REFRESH INDICATOR
+      ============================================ */
+      #ptr-indicator {
+        position: fixed;
+        top: env(safe-area-inset-top, 0px);
+        left: 0;
+        right: 0;
+        z-index: 9998;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        height: 56px;
+        background: #111118;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        color: #a0a0b8;
+        font-size: 13px;
+        font-weight: 500;
+        pointer-events: none;
+        transform: translateY(-100%);
+        transition: none;
+        will-change: transform;
+      }
+
+      #ptr-indicator.ptr-releasing {
+        transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+      }
+
+      #ptr-indicator.ptr-refreshing {
+        transform: translateY(0) !important;
+        transition: transform 0.25s ease;
+      }
+
+      #ptr-spinner {
+        width: 18px;
+        height: 18px;
+        border: 2px solid rgba(160, 160, 184, 0.25);
+        border-top-color: #a0a0b8;
+        border-radius: 50%;
+        flex-shrink: 0;
+        transform: rotate(0deg);
+        transition: transform 0.3s ease;
+      }
+
+      #ptr-indicator.ptr-refreshing #ptr-spinner {
+        animation: ptr-spin 0.7s linear infinite;
+        border-top-color: #6366f1;
+        border-color: rgba(99, 102, 241, 0.25);
+        border-top-color: #6366f1;
+      }
+
+      @keyframes ptr-spin {
+        to { transform: rotate(360deg); }
+      }
+
+      /* ============================================
+         FITUR BARU: TOMBOL PASTE CLIPBOARD
+      ============================================ */
+      #paste-btn {
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 36px;
+        height: 36px;
+        min-width: 36px;
+        min-height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255, 255, 255, 0.07);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        cursor: pointer;
+        color: #a0a0b8;
+        padding: 0;
+        flex-shrink: 0;
+        transition: background 0.15s ease, color 0.15s ease, transform 0.15s ease, border-color 0.15s ease;
+        -webkit-tap-highlight-color: transparent;
+        z-index: 10;
+      }
+
+      #paste-btn:active {
+        transform: translateY(-50%) scale(0.92);
+        background: rgba(255, 255, 255, 0.12);
+      }
+
+      #paste-btn.paste-success {
+        background: rgba(34, 197, 94, 0.15);
+        border-color: rgba(34, 197, 94, 0.35);
+        color: #4ade80;
+      }
+
+      #paste-btn svg {
+        width: 16px;
+        height: 16px;
+        pointer-events: none;
+        transition: opacity 0.15s ease;
+      }
+
+      /* Wrapper untuk posisi tombol paste */
+      .paste-input-wrapper {
+        position: relative;
+        display: flex;
+        align-items: center;
+      }
+
+      /* Geser padding kanan input agar tidak tertutup tombol */
+      .paste-input-wrapper input {
+        padding-right: 52px !important;
       }
     </style>
 
@@ -370,6 +483,12 @@
       <span>Tidak ada koneksi internet. Download tidak tersedia.</span>
     </div>
 
+    <!-- Pull-to-Refresh Indicator -->
+    <div id="ptr-indicator" aria-hidden="true">
+      <div id="ptr-spinner"></div>
+      <span id="ptr-text">Tarik untuk refresh</span>
+    </div>
+
     <!-- Splash screen -->
     <div id="splash" aria-hidden="true">
       <img id="splash-logo" src="./icons/icon-192x192.png" alt="" />
@@ -378,10 +497,10 @@
 
     <div id="root"></div>
 
-    <script>
-      /* ============================================
+    <!-- ============================================
          SPLASH SCREEN
-      ============================================ */
+    ============================================ -->
+    <script>
       (function () {
         var splash = document.getElementById('splash');
 
@@ -409,48 +528,245 @@
       })();
     </script>
 
-    <script>
-      /* ============================================
+    <!-- ============================================
          INDIKATOR OFFLINE
-         Muncul otomatis saat koneksi terputus,
-         hilang saat koneksi kembali.
-      ============================================ */
+    ============================================ -->
+    <script>
       (function () {
         var banner = document.getElementById('offline-banner');
 
-        function showOffline() {
-          if (banner) banner.classList.add('visible');
-        }
+        function showOffline() { if (banner) banner.classList.add('visible'); }
+        function hideOffline() { if (banner) banner.classList.remove('visible'); }
 
-        function hideOffline() {
-          if (banner) banner.classList.remove('visible');
-        }
-
-        // Cek status awal
         if (!navigator.onLine) showOffline();
-
         window.addEventListener('offline', showOffline);
         window.addEventListener('online', hideOffline);
       })();
     </script>
 
+    <!-- ============================================
+         FITUR BARU: PULL-TO-REFRESH
+         Aktif hanya di perangkat touch (mobile).
+         Threshold 80px. Trigger: reload halaman.
+         Tidak aktif saat user sedang scroll konten.
+    ============================================ -->
     <script>
-      /* ============================================
-         VALIDASI URL TIKTOK DI FRONTEND
-         
-         Strategi: intercept klik tombol download di
-         fase capture (sebelum React memprosesnya).
-         Jika URL tidak valid, tampilkan error dan
-         batalkan event agar request ke API tidak dikirim.
-         
-         Pattern URL TikTok yang valid:
-         - tiktok.com/@user/video/123
-         - vm.tiktok.com/xxxxx
-         - vt.tiktok.com/xxxxx
-      ============================================ */
+      (function () {
+        var indicator = document.getElementById('ptr-indicator');
+        var spinner   = document.getElementById('ptr-spinner');
+        var ptrText   = document.getElementById('ptr-text');
+
+        if (!indicator || !('ontouchstart' in window)) return;
+
+        var THRESHOLD    = 80;   // px tarikan untuk trigger refresh
+        var MAX_PULL     = 110;  // px maksimal indikator muncul
+        var startY       = 0;
+        var currentPull  = 0;
+        var isPulling    = false;
+        var isRefreshing = false;
+        var startScrollY = 0;
+
+        function setIndicatorY(pull) {
+          var pct  = Math.min(pull / THRESHOLD, 1);
+          var deg  = pct * 180;
+          var yPx  = Math.min(pull * 0.6, MAX_PULL * 0.6) - 56;
+          indicator.style.transform = 'translateY(' + yPx + 'px)';
+          spinner.style.transform   = 'rotate(' + deg + 'deg)';
+          ptrText.textContent       = pull >= THRESHOLD ? 'Lepas untuk refresh' : 'Tarik untuk refresh';
+        }
+
+        document.addEventListener('touchstart', function (e) {
+          if (isRefreshing) return;
+          startY       = e.touches[0].clientY;
+          startScrollY = window.scrollY;
+          isPulling    = false;
+          currentPull  = 0;
+        }, { passive: true });
+
+        document.addEventListener('touchmove', function (e) {
+          if (isRefreshing) return;
+
+          var deltaY = e.touches[0].clientY - startY;
+
+          // Hanya aktif saat: tarik ke bawah + halaman di posisi paling atas
+          if (deltaY <= 0 || window.scrollY > 0 || startScrollY > 0) return;
+
+          isPulling   = true;
+          currentPull = deltaY;
+          setIndicatorY(currentPull);
+        }, { passive: true });
+
+        document.addEventListener('touchend', function () {
+          if (!isPulling || isRefreshing) return;
+
+          isPulling = false;
+
+          if (currentPull >= THRESHOLD) {
+            // Trigger refresh
+            isRefreshing = true;
+            indicator.classList.add('ptr-releasing', 'ptr-refreshing');
+            indicator.style.transform = '';
+            ptrText.textContent = 'Memuat ulang...';
+            spinner.style.transform = '';
+
+            setTimeout(function () {
+              window.location.reload();
+            }, 800);
+          } else {
+            // Kembalikan indikator ke atas
+            indicator.classList.add('ptr-releasing');
+            indicator.style.transform = 'translateY(-100%)';
+            setTimeout(function () {
+              indicator.classList.remove('ptr-releasing');
+              indicator.style.transform = '';
+              spinner.style.transform = '';
+              currentPull = 0;
+            }, 300);
+          }
+        }, { passive: true });
+      })();
+    </script>
+
+    <!-- ============================================
+         FITUR BARU: TOMBOL PASTE CLIPBOARD (ICON)
+         Inject tombol clipboard icon ke dalam input.
+         Menggantikan text "Paste" dengan ikon SVG.
+         Gunakan Clipboard API dengan fallback execCommand.
+    ============================================ -->
+    <script>
+      (function () {
+        var injected = false;
+
+        // SVG: ikon clipboard
+        var iconClipboard = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="4" rx="1"/><path d="M8 4H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-2"/><path d="M9 12h6M9 16h4"/></svg>';
+
+        // SVG: ikon centang (feedback sukses paste)
+        var iconCheck = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+
+        function findTikTokInput() {
+          var inputs = document.querySelectorAll('input[type="text"], input[type="url"], input:not([type])');
+          for (var i = 0; i < inputs.length; i++) {
+            var ph = (inputs[i].placeholder || '').toLowerCase();
+            if (ph.includes('tiktok') || ph.includes('url') || ph.includes('link') || ph.includes('paste')) {
+              return inputs[i];
+            }
+          }
+          return document.querySelector('#root input');
+        }
+
+        function injectPasteButton(input) {
+          if (injected || document.getElementById('paste-btn')) return;
+
+          var parent = input.parentElement;
+          if (!parent) return;
+
+          // Bungkus input dengan wrapper relatif jika belum ada
+          if (!parent.classList.contains('paste-input-wrapper')) {
+            var wrapper = document.createElement('div');
+            wrapper.className = 'paste-input-wrapper';
+            // Salin style posisi dari parent jika ada
+            var computedStyle = window.getComputedStyle(parent);
+            wrapper.style.cssText = 'position:relative;display:flex;align-items:center;width:100%;';
+            parent.insertBefore(wrapper, input);
+            wrapper.appendChild(input);
+            parent = wrapper;
+          }
+
+          var btn = document.createElement('button');
+          btn.id            = 'paste-btn';
+          btn.type          = 'button';
+          btn.title         = 'Tempel dari clipboard';
+          btn.setAttribute('aria-label', 'Tempel URL dari clipboard');
+          btn.innerHTML     = iconClipboard;
+
+          btn.addEventListener('click', function (e) {
+            e.stopPropagation();
+
+            // Sembunyikan tombol paste bawaan React jika ada (text "Paste")
+            hideLegacyPasteBtn();
+
+            function doFeedback(text) {
+              if (text) {
+                input.value = text;
+                // Trigger React onChange agar state React ikut update
+                var nativeInputValueSetter = Object.getOwnPropertyDescriptor(
+                  window.HTMLInputElement.prototype, 'value'
+                ).set;
+                nativeInputValueSetter.call(input, text);
+                input.dispatchEvent(new Event('input', { bubbles: true }));
+                input.dispatchEvent(new Event('change', { bubbles: true }));
+              }
+
+              // Feedback visual: tampilkan ikon centang
+              btn.innerHTML = iconCheck;
+              btn.classList.add('paste-success');
+
+              setTimeout(function () {
+                btn.innerHTML = iconClipboard;
+                btn.classList.remove('paste-success');
+              }, 1500);
+            }
+
+            // Clipboard API (modern browsers)
+            if (navigator.clipboard && navigator.clipboard.readText) {
+              navigator.clipboard.readText()
+                .then(function (text) { doFeedback(text.trim()); })
+                .catch(function () {
+                  // Fallback: fokus input dan minta user paste manual
+                  input.focus();
+                  doFeedback('');
+                });
+            } else {
+              // Fallback execCommand untuk browser lama
+              input.focus();
+              document.execCommand('paste');
+              doFeedback('');
+            }
+          });
+
+          parent.appendChild(btn);
+          injected = true;
+        }
+
+        // Sembunyikan tombol/teks "Paste" bawaan dari React jika ada
+        function hideLegacyPasteBtn() {
+          var allBtns = document.querySelectorAll('#root button');
+          for (var i = 0; i < allBtns.length; i++) {
+            var txt = (allBtns[i].textContent || '').trim().toLowerCase();
+            if (txt === 'paste' || txt === 'tempel') {
+              allBtns[i].style.display = 'none';
+            }
+          }
+        }
+
+        // Tunggu React mount lalu inject tombol
+        var root = document.getElementById('root');
+        var observer = new MutationObserver(function (mutations, obs) {
+          var input = findTikTokInput();
+          if (input) {
+            injectPasteButton(input);
+            hideLegacyPasteBtn();
+            // Tetap observe untuk kasus React re-render ulang input
+            if (injected) obs.disconnect();
+          }
+        });
+
+        if (root) {
+          observer.observe(root, { childList: true, subtree: true });
+        }
+      })();
+    </script>
+
+    <!-- ============================================
+         VALIDASI URL TIKTOK
+         PERBAIKAN #5: Satu sistem validasi, bukan dua.
+         Sistem ini satu-satunya validasi frontend.
+         Pastikan validasi di React dinonaktifkan atau
+         dihapus agar tidak konflik.
+    ============================================ -->
+    <script>
       (function () {
         var TIKTOK_PATTERN = /(?:https?:\/\/)?(?:www\.|vm\.|vt\.)?tiktok\.com\/.+/i;
-
         var errorEl = null;
 
         function getErrorEl() {
@@ -464,10 +780,7 @@
           if (!el) return;
           el.textContent = msg;
           el.classList.add('visible');
-          // Sembunyikan otomatis setelah 4 detik
-          setTimeout(function () {
-            el.classList.remove('visible');
-          }, 4000);
+          setTimeout(function () { el.classList.remove('visible'); }, 4000);
         }
 
         function hideError() {
@@ -476,15 +789,13 @@
         }
 
         function findTikTokInput() {
-          // Cari input yang kemungkinan berisi URL TikTok
-          var inputs = document.querySelectorAll('input[type="text"], input:not([type])');
+          var inputs = document.querySelectorAll('input[type="text"], input[type="url"], input:not([type])');
           for (var i = 0; i < inputs.length; i++) {
             var ph = (inputs[i].placeholder || '').toLowerCase();
             if (ph.includes('tiktok') || ph.includes('url') || ph.includes('link') || ph.includes('paste')) {
               return inputs[i];
             }
           }
-          // Fallback: input pertama di dalam #root
           return document.querySelector('#root input');
         }
 
@@ -492,7 +803,6 @@
           if (document.getElementById('url-error-msg')) return;
           var el = document.createElement('div');
           el.id = 'url-error-msg';
-          // Sisipkan setelah parent input
           var parent = input.closest('form, [class*="glass"], [class*="rounded"]') || input.parentElement;
           if (parent && parent.parentElement) {
             parent.parentElement.insertBefore(el, parent.nextSibling);
@@ -505,25 +815,19 @@
           if (!input) return;
 
           injectErrorEl(input);
-
-          // Hapus error saat user mulai mengetik
           input.addEventListener('input', hideError);
 
-          // Intercept klik tombol submit di fase capture
           document.addEventListener('click', function (e) {
             var btn = e.target.closest('button');
             if (!btn) return;
+            if (btn.id === 'paste-btn') return; // Jangan intercept tombol paste
 
-            // Hanya intercept tombol yang ada di area form input
             var inputParent = input.closest('[class]');
             if (!inputParent || !inputParent.contains(btn)) return;
 
             var value = (input.value || '').trim();
-
-            // Biarkan jika input kosong: React sudah handle pesan ini
             if (!value) return;
 
-            // Validasi format URL TikTok
             if (!TIKTOK_PATTERN.test(value)) {
               e.stopPropagation();
               e.preventDefault();
@@ -533,10 +837,9 @@
             }
 
             hideError();
-          }, true); // true = capture phase, jalan sebelum React
+          }, true);
         }
 
-        // Tunggu React mount lalu inject validasi
         var root = document.getElementById('root');
         var initObserver = new MutationObserver(function (mutations, obs) {
           var input = findTikTokInput();
@@ -552,10 +855,10 @@
       })();
     </script>
 
-    <script>
-      /* ============================================
+    <!-- ============================================
          DETEKSI iOS & PWA STANDALONE
-      ============================================ */
+    ============================================ -->
+    <script>
       (function () {
         var ua = navigator.userAgent;
         if (/iphone|ipad|ipod/i.test(ua)) {
@@ -565,10 +868,15 @@
           document.body.classList.add('pwa-standalone');
         }
       })();
+    </script>
 
-      /* ============================================
+    <!-- ============================================
          SERVICE WORKER REGISTRATION
-      ============================================ */
+         CATATAN: Ganti 'tiksave-static-v1' di sw.js
+         setiap kali Anda deploy versi baru agar cache
+         lama tidak dipakai pengguna yang sudah install PWA.
+    ============================================ -->
+    <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', function () {
           navigator.serviceWorker.register('./sw.js', { scope: './' })
