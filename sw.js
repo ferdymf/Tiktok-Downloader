@@ -1,19 +1,10 @@
 // TikSave Service Worker
-// Versi: 1.0.0
-//
-// Strategi cache:
-// - Aset statis (JS, CSS, gambar): Cache First
-// - Halaman HTML: Network First dengan fallback cache
-// - API eksternal (TikTok downloader): Network Only
-//
-// PENTING: Nama file JS/CSS TIDAK di-hardcode di sini karena
-// Vite menghasilkan nama file dengan hash yang berubah setiap build.
-// SW menangkap dan cache aset secara dinamis saat pertama kali dimuat.
+// Versi cache di-inject otomatis oleh deploy.js saat build.
+// Jangan edit BUILD_TIMESTAMP secara manual.
 
-const STATIC_CACHE = 'tiksave-static-v1';
-const PAGE_CACHE = 'tiksave-page-v1';
+const STATIC_CACHE = 'tiksave-static-__BUILD_TIMESTAMP__';
+const PAGE_CACHE   = 'tiksave-page-__BUILD_TIMESTAMP__';
 
-// Hanya file-file yang namanya stabil yang di-cache saat install
 const PRECACHE_ASSETS = [
   './',
   './index.html',
@@ -28,13 +19,13 @@ const PRECACHE_ASSETS = [
   './icons/icon-512x512.png'
 ];
 
-// Install: cache aset stabil saja
+// ============================================
+// INSTALL: cache aset stabil
+// ============================================
 self.addEventListener('install', function (event) {
   event.waitUntil(
     caches.open(STATIC_CACHE)
       .then(function (cache) {
-        // Gunakan addAll dengan individual error handling
-        // agar satu aset gagal tidak batalkan seluruh install
         return Promise.allSettled(
           PRECACHE_ASSETS.map(function (url) {
             return cache.add(url).catch(function (err) {
@@ -44,119 +35,110 @@ self.addEventListener('install', function (event) {
         );
       })
       .then(function () {
-        return self.skipWaiting();
+        // Jangan skipWaiting di sini. Biarkan halaman kontrol
+        // kapan SW baru aktif via postMessage SKIP_WAITING.
+        // Ini mencegah update mendadak saat user sedang download.
       })
   );
 });
 
-// Activate: hapus cache dari versi lama
+// ============================================
+// ACTIVATE: hapus cache versi lama
+// ============================================
 self.addEventListener('activate', function (event) {
-  var validCaches = [STATIC_CACHE, PAGE_CACHE];
+  var valid = [STATIC_CACHE, PAGE_CACHE];
 
   event.waitUntil(
     caches.keys()
-      .then(function (cacheNames) {
+      .then(function (names) {
         return Promise.all(
-          cacheNames
-            .filter(function (name) {
-              return !validCaches.includes(name);
-            })
-            .map(function (name) {
-              return caches.delete(name);
+          names
+            .filter(function (n) { return !valid.includes(n); })
+            .map(function (n) {
+              console.log('[SW] Hapus cache lama:', n);
+              return caches.delete(n);
             })
         );
       })
-      .then(function () {
-        return self.clients.claim();
-      })
+      .then(function () { return self.clients.claim(); })
   );
 });
 
-// Fetch: routing berdasarkan tipe request
+// ============================================
+// FETCH: routing per tipe request
+// ============================================
 self.addEventListener('fetch', function (event) {
-  var request = event.request;
-  var url = new URL(request.url);
+  var req = event.request;
+  var url = new URL(req.url);
 
-  // Lewati request non-GET
-  if (request.method !== 'GET') return;
+  // Lewati non-GET
+  if (req.method !== 'GET') return;
 
-  // Lewati request browser extension atau non-http
+  // Lewati non-http (chrome-extension, dll)
   if (!url.protocol.startsWith('http')) return;
 
   // API eksternal: Network Only
-  // Jika offline, kembalikan response JSON yang jelas
+  // Jika offline, kembalikan JSON error yang jelas
   if (url.hostname !== self.location.hostname) {
     event.respondWith(
-      fetch(request).catch(function () {
+      fetch(req).catch(function () {
         return new Response(
           JSON.stringify({ error: 'Tidak ada koneksi internet.' }),
-          {
-            status: 503,
-            headers: { 'Content-Type': 'application/json' }
-          }
+          { status: 503, headers: { 'Content-Type': 'application/json' } }
         );
       })
     );
     return;
   }
 
-  // Aset statis: Cache First, lalu cache dinamis saat network berhasil
-  // Ini menangani file JS/CSS ber-hash tanpa perlu hardcode nama filenya
-  var isStaticAsset = (
+  // Aset statis (JS, CSS, gambar, font): Cache First
+  // Aset ber-hash Vite ditangkap dan dicache secara dinamis.
+  var isStatic = (
     url.pathname.startsWith('/assets/') ||
     url.pathname.startsWith('/icons/') ||
     /\.(js|css|png|jpg|jpeg|webp|svg|woff|woff2|ttf)$/.test(url.pathname)
   );
 
-  if (isStaticAsset) {
+  if (isStatic) {
     event.respondWith(
-      caches.match(request)
-        .then(function (cached) {
-          if (cached) return cached;
+      caches.match(req).then(function (cached) {
+        if (cached) return cached;
 
-          // Tidak ada di cache: ambil dari network dan cache hasilnya
-          return fetch(request)
-            .then(function (response) {
-              if (response.ok && response.status === 200) {
-                var clone = response.clone();
-                caches.open(STATIC_CACHE).then(function (cache) {
-                  cache.put(request, clone);
-                });
-              }
-              return response;
-            })
-            .catch(function () {
-              // Aset statis tidak tersedia: kembalikan 404 kosong
-              return new Response('', { status: 404 });
-            });
-        })
+        return fetch(req).then(function (res) {
+          if (res.ok) {
+            var clone = res.clone();
+            caches.open(STATIC_CACHE).then(function (c) { c.put(req, clone); });
+          }
+          return res;
+        }).catch(function () {
+          return new Response('', { status: 404 });
+        });
+      })
     );
     return;
   }
 
-  // Halaman HTML: Network First, fallback ke cache
+  // Halaman HTML: Network First, fallback ke cache lalu index.html
   event.respondWith(
-    fetch(request)
-      .then(function (response) {
-        if (response.ok) {
-          var clone = response.clone();
-          caches.open(PAGE_CACHE).then(function (cache) {
-            cache.put(request, clone);
-          });
+    fetch(req)
+      .then(function (res) {
+        if (res.ok) {
+          var clone = res.clone();
+          caches.open(PAGE_CACHE).then(function (c) { c.put(req, clone); });
         }
-        return response;
+        return res;
       })
       .catch(function () {
-        // Offline: coba dari cache halaman, fallback ke index.html
-        return caches.match(request)
-          .then(function (cached) {
-            return cached || caches.match('./index.html');
-          });
+        return caches.match(req).then(function (cached) {
+          return cached || caches.match('./index.html');
+        });
       })
   );
 });
 
-// Tangani pesan dari halaman (misal: force update)
+// ============================================
+// MESSAGE: terima perintah dari halaman
+// ============================================
 self.addEventListener('message', function (event) {
   if (event.data && event.data.type === 'SKIP_WAITING') {
     self.skipWaiting();
