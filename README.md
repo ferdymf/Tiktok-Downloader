@@ -1,31 +1,29 @@
-# TikSave - TikTok Downloader
+# TikSave — TikTok Downloader
 
-Download video TikTok tanpa watermark dalam kualitas HD, SD, atau audio MP3. Gratis, cepat, dan bisa diinstall sebagai aplikasi di HP.
+> Download video TikTok tanpa watermark. HD, SD, dan Audio MP3. Gratis, cepat, dan bisa diinstall sebagai aplikasi.
 
-Demo: **[https://ferdymf.github.io/Tiktok-Downloader/](https://ferdymf.github.io/Tiktok-Downloader/)**
+**Demo:** [https://ferdymf.github.io/Tiktok-Downloader/](https://ferdymf.github.io/Tiktok-Downloader/)
 
 ---
 
 ## Fitur
 
-- Download video TikTok tanpa watermark
-- Pilihan kualitas HD, SD, dan audio MP3
-- Riwayat download tersimpan di perangkat
-- Bisa diinstall sebagai PWA di HP (Android & iOS)
-- Pull-to-refresh dengan gesture tarik layar ke bawah
-- Tombol paste clipboard (ikon) di dalam input URL
-- Notifikasi otomatis saat versi baru tersedia
+- Download video TikTok tanpa watermark (HD, SD, MP3)
+- Riwayat download tersimpan di perangkat (localStorage)
+- Installable sebagai PWA di Android & iOS
+- Pull-to-refresh dengan gesture tarik layar
+- Tombol paste clipboard langsung di input URL
 - Indikator offline saat koneksi terputus
-- Tampilan gelap, optimal di layar mobile
+- Tampilan gelap AMOLED, dioptimasi untuk layar mobile
 
 ---
 
 ## Cara Pakai
 
-1. Buka TikTok, pilih video, tap **Share**, pilih **Salin tautan**
-2. Buka TikSave dan tap ikon clipboard di input URL
-3. Pilih kualitas (HD, SD, atau MP3)
-4. Tap tombol download
+1. Buka TikTok → pilih video → tap **Share** → **Salin tautan**
+2. Buka TikSave → tap ikon clipboard di input URL
+3. Pilih kualitas: **HD**, **SD**, atau **MP3**
+4. Tap **Download**
 
 ---
 
@@ -33,42 +31,11 @@ Demo: **[https://ferdymf.github.io/Tiktok-Downloader/](https://ferdymf.github.io
 
 **Android (Chrome)**
 1. Buka TikSave di Chrome
-2. Tap ikon tiga titik, pilih **Tambahkan ke layar utama**
+2. Tap ikon tiga titik → **Tambahkan ke layar utama**
 
 **iOS (Safari)**
 1. Buka TikSave di Safari
-2. Tap ikon **Share** (kotak dengan panah ke atas)
-3. Pilih **Tambahkan ke Layar Utama**
-
----
-
-## Deploy ke GitHub Pages
-
-### Setup Awal
-
-1. Push semua file ke repository GitHub
-2. Buka **Settings** repository, pilih **Pages**
-3. Set **Source** ke branch `main`, folder `/ (root)`
-4. Klik **Save**
-
-### Setiap Deploy Baru
-
-Gunakan script deploy otomatis agar cache Service Worker ter-invalidate:
-
-```bash
-npm run deploy
-```
-
-Script ini menjalankan `vite build` lalu inject timestamp unik ke `sw.js`. Pengguna yang sudah install PWA akan mendapat notifikasi update otomatis.
-
-Tambahkan di `package.json`:
-
-```json
-"scripts": {
-  "build": "vite build",
-  "deploy": "vite build && node deploy.js"
-}
-```
+2. Tap ikon **Share** → **Tambahkan ke Layar Utama**
 
 ---
 
@@ -77,8 +44,8 @@ Tambahkan di `package.json`:
 ```
 root/
 ├── assets/
-│   ├── index-[hash].js       JavaScript bundle (Vite)
-│   └── index-[hash].css      CSS bundle (Vite)
+│   ├── index-[hash].js       JavaScript bundle (Vite output)
+│   └── index-[hash].css      CSS bundle (Vite output)
 ├── icons/
 │   ├── icon-72x72.png
 │   ├── icon-96x96.png
@@ -88,40 +55,82 @@ root/
 │   ├── icon-192x192.png
 │   ├── icon-384x384.png
 │   └── icon-512x512.png
-├── screenshots/              Dipakai manifest.json untuk install prompt PWA
-│   ├── home.png              390x844 px, tampilan halaman utama
-│   └── result.png            390x844 px, tampilan hasil download
+├── screenshots/
+│   ├── home.png              390×844 px — tampilan halaman utama
+│   └── result.png            390×844 px — tampilan hasil download
 ├── .nojekyll                 Nonaktifkan Jekyll di GitHub Pages
 ├── 404.html                  SPA routing fix untuk GitHub Pages
 ├── deploy.js                 Script inject cache version ke sw.js
 ├── index.html                Entry point aplikasi
 ├── manifest.json             PWA manifest
-└── sw.js                     Service worker (offline, caching, update)
+└── sw.js                     Service worker (offline & caching)
 ```
+
+---
+
+## Deploy ke GitHub Pages
+
+### Setup Awal
+
+1. Push semua file ke repository GitHub
+2. Buka **Settings** → **Pages**
+3. Set **Source** ke branch `main`, folder `/ (root)`
+4. Klik **Save**
+
+### Setiap Deploy Baru
+
+Gunakan script deploy agar cache Service Worker ter-invalidate otomatis:
+
+```bash
+npm run deploy
+```
+
+Tambahkan script berikut di `package.json`:
+
+```json
+"scripts": {
+  "build": "vite build",
+  "deploy": "vite build && node deploy.js"
+}
+```
+
+`deploy.js` akan meng-inject timestamp unik ke `sw.js` setiap kali build, sehingga cache lama otomatis dihapus saat ada versi baru.
+
+---
+
+## Catatan Teknis
+
+### SPA Routing Fix
+
+GitHub Pages tidak mendukung client-side routing secara native. Saat user mengakses URL selain root (misalnya `/history`), GitHub Pages akan mengembalikan 404.
+
+Solusinya menggunakan dua file:
+- `404.html` — menyimpan path ke `sessionStorage` lalu redirect ke root
+- `index.html` — membaca `sessionStorage` dan React Router melanjutkan navigasi ke path yang benar
+
+### Service Worker & Cache
+
+`sw.js` menggunakan placeholder `__BUILD_TIMESTAMP__` yang diganti otomatis oleh `deploy.js`. Jangan ubah nilai ini secara manual.
+
+Strategi cache yang digunakan:
+
+| Tipe Request | Strategi |
+|---|---|
+| Aset statis (JS, CSS, gambar) | Cache First |
+| Halaman HTML | Network First, fallback ke cache |
+| API eksternal | Network Only, fallback JSON error |
+
+### Screenshots PWA
+
+File `screenshots/home.png` dan `screenshots/result.png` (ukuran 390×844 px) diperlukan agar install prompt PWA di Android menampilkan preview aplikasi. Tanpa file ini, prompt install tetap muncul tapi tanpa gambar.
 
 ---
 
 ## Teknologi
 
-- React + Vite
-- Tailwind CSS
-- PWA (Service Worker, Web App Manifest)
-
----
-
-## Catatan Penting
-
-### Screenshots PWA
-
-Buat dua file screenshot (390x844 px) dan simpan di folder `screenshots/`:
-- `home.png`: tampilan halaman utama TikSave
-- `result.png`: tampilan setelah video berhasil diproses
-
-Tanpa file ini, prompt install PWA di Android tidak menampilkan preview.
-
-### Cache Service Worker
-
-`sw.js` menggunakan placeholder `__BUILD_TIMESTAMP__` yang diganti secara otomatis oleh `deploy.js` saat build. Jangan edit nilai cache version secara manual.
+- [React](https://react.dev/) + [Vite](https://vite.dev/)
+- [Tailwind CSS](https://tailwindcss.com/)
+- PWA — Service Worker & Web App Manifest
 
 ---
 
